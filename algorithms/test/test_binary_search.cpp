@@ -9,6 +9,7 @@ int main()
 {
   std::vector<int> v = {3, 5, 1, -2, -7, 9, 4, 6, 1, -1};
   cheetah::heap_sort(v);
+  assert(cheetah::is_sorted(v));
 
   int target = -1;
 
@@ -35,6 +36,8 @@ int main()
 
   v = {3, 5, 1, -2, -7, 9, 4, 6, 1, -1};
   cheetah::heap_sort(v, std::greater<int>());
+  assert(!cheetah::is_sorted(v));
+  assert(cheetah::is_sorted(v, std::greater<int>()));
 
   target = 4;
 

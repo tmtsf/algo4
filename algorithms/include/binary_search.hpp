@@ -112,6 +112,31 @@ namespace cheetah
   }
 
   template<typename T>
+  bool is_sorted(const std::vector<T>& v)
+  {
+    for (std::size_t i=0; i<v.size()-1; ++i)
+    {
+      if (v[i+1] < v[i])
+        return false;
+    }
+
+    return true;
+  }
+
+  template<typename T, typename Comp>
+  bool is_sorted(const std::vector<T>& v,
+                 const Comp& comp)
+  {
+    for (std::size_t i=0; i<v.size()-1; ++i)
+    {
+      if (comp(v[i+1], v[i]))
+        return false;
+    }
+
+    return true;
+  }
+
+  template<typename T>
   std::size_t binary_search(const std::vector<T>& v,
                             const T& target)
   {
