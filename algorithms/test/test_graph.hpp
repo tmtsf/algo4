@@ -1,6 +1,7 @@
 #include <iostream>
 #include <stack>
 #include <queue>
+#include <unordered_set>
 
 #include "graph.hpp"
 
@@ -15,6 +16,22 @@ namespace cheetah
   namespace
   {
     template<typename T>
+    std::unordered_set<T> vertices(const graph<T>& g)
+    {
+      std::unordered_set<T> s;
+      for (const auto& item : g)
+      {
+        s.insert(item.first);
+        for (const auto& edge : item.second)
+        {
+          s.insert(edge.vertex);
+        }
+      }
+
+      return s;
+    }
+
+    template<typename T>
     void graph_dfs_helper(const graph<T>& g,
                           const T& start,
                           std::unordered_map<T, bool>& visited,
@@ -23,11 +40,11 @@ namespace cheetah
       std::cout << spaces << start << "\n";
       visited[start] = true;
       auto edges = g.at(start);
-      for (const auto& pair : edges)
+      for (const auto& edge : edges)
       {
-        if (!visited[pair.first])
+        if (!visited[edge.vertex])
         {
-          graph_dfs_helper(g, pair.first, visited, spaces + "  ");
+          graph_dfs_helper(g, edge.vertex, visited, spaces + "  ");
         }
       }
     }
@@ -48,15 +65,6 @@ namespace cheetah
   template<typename T>
   void test_graph_bfs(const graph<T>& g)
   {
-    // for (const auto& item : g)
-    // {
-    //   std::cout << item.first << ": ";
-    //   for (const auto& pair : item.second)
-    //     std::cout << "[" << pair.first << ", " << pair.second << "] -> ";
-
-    //   std::cout << "[]\n";
-    // }
-
     std::unordered_map<T, bool> visited;
     std::queue<T> q;
     for (const auto& item : g)
@@ -96,14 +104,17 @@ namespace cheetah
     template<typename T>
     void connected_component_helper(const graph<T>& g,
                                     const T& v,
-                                    std::unordered_map<int, bool>& visited)
+                                    std::unordered_map<int, bool>& visited,
+                                    std::unordered_map<T, int>& m,
+                                    int count)
     {
       visited[v] = true;
+      m[v] = count;
       const auto& edges = g.at(v);
-      for (const auto& pair : edges)
+      for (const auto& edge : edges)
       {
-        if (!visited[pair.first])
-          connected_component_helper(g, pair.first, visited);
+        if (!visited[edge.vertex])
+          connected_component_helper(g, edge.vertex, visited, m, count);
       }
     }
   }
@@ -112,18 +123,32 @@ namespace cheetah
   void test_graph_connected_components(const graph<T>& g)
   {
     std::unordered_map<T, bool> visited;
+    std::unordered_map<T, int> m;
     int count = 0;
     for (const auto& item : g)
     {
       if (!visited[item.first])
       {
         ++count;
-        connected_component_helper(g, item.first, visited);
+        connected_component_helper(g, item.first, visited, m, count);
       }
     }
 
-    std::cout << count << "\n";
-    // assert(count == 3);
+    std::cout << "There are " << count << " connected components in this graph.\n";
+    std::vector<std::vector<T>> components(count, std::vector<T>());
+    for (const auto& item : m)
+    {
+      components[item.second-1].push_back(item.first);
+    }
+
+    for (int i=0; i<count; ++i)
+    {
+      std::cout << i << ": ";
+      for (const auto& e : components[i])
+        std::cout << e << "  ";
+
+      std::cout << "\n";
+    }
   }
 
   namespace
@@ -135,13 +160,17 @@ namespace cheetah
                                std::unordered_map<T, T>& path)
     {
       visited[source] = true;
-      for (const auto& edge : g.at(source))
+
+      if (g.count(source))
       {
-        if (!visited[edge.first])
+        for (const auto& edge : g.at(source))
         {
-          visited[edge.first] = true;
-          path[edge.first] = source;
-          graph_dfs_path_helper(g, edge.first, visited, path);
+          if (!visited[edge.vertex])
+          {
+            visited[edge.vertex] = true;
+            path[edge.vertex] = source;
+            graph_dfs_path_helper(g, edge.vertex, visited, path);
+          }
         }
       }
     }
@@ -154,16 +183,17 @@ namespace cheetah
     std::unordered_map<T, bool> visited;
     std::unordered_map<T, T> path;
     graph_dfs_path_helper(g, source, visited, path);
+    std::unordered_set<T> s = vertices(g);
 
-    for (const auto& item : g)
+    for (const auto& item : s)
     {
-      if (!visited[item.first])
-        std::cout << item.first << ": Not accessible from " << source << "!\n";
-      else if (source == item.first)
-        std::cout << item.first << ": Start of the path!\n";
+      if (!visited[item])
+        std::cout << item << ": Not accessible from " << source << "!\n";
+      else if (source == item)
+        std::cout << item << ": Start of the path!\n";
       else
       {
-        T temp = item.first;
+        T temp = item;
         std::stack<T> s;
         while (temp != source)
         {
@@ -171,7 +201,7 @@ namespace cheetah
           temp = path[temp];
         }
 
-        std::cout << item.first << ": " << source;
+        std::cout << item << ": " << source;
         while (!s.empty())
         {
           temp = s.top();
@@ -181,7 +211,6 @@ namespace cheetah
 
         std::cout << "\n";
       }
-
     }
   }
 
@@ -200,26 +229,30 @@ namespace cheetah
       visited[temp] = true;
       q.pop();
 
-      for (const auto& edge : g.at(temp))
+      if (g.count(temp))
       {
-        if (!visited[edge.first])
+        for (const auto& edge : g.at(temp))
         {
-          visited[edge.first] = true;
-          q.push(edge.first);
-          path[edge.first] = temp;
+          if (!visited[edge.vertex])
+          {
+            visited[edge.vertex] = true;
+            q.push(edge.vertex);
+            path[edge.vertex] = temp;
+          }
         }
       }
     }
 
-    for (const auto& item : g)
+    std::unordered_set<T> s = vertices(g);
+    for (const auto& item : s)
     {
-      if (!visited[item.first])
-        std::cout << item.first << ": Not accessible from " << source << "!\n";
-      else if (source == item.first)
-        std::cout << item.first << ": Start of the path!\n";
+      if (!visited[item])
+        std::cout << item << ": Not accessible from " << source << "!\n";
+      else if (source == item)
+        std::cout << item << ": Start of the path!\n";
       else
       {
-        T temp = item.first;
+        T temp = item;
         std::stack<T> s;
         while (temp != source)
         {
@@ -227,7 +260,7 @@ namespace cheetah
           temp = path[temp];
         }
 
-        std::cout << item.first << ": " << source;
+        std::cout << item << ": " << source;
         while (!s.empty())
         {
           temp = s.top();
@@ -237,7 +270,99 @@ namespace cheetah
 
         std::cout << "\n";
       }
-
     }
+  }
+
+  namespace
+  {
+    template<typename T>
+    bool is_dag_helper(const graph<T>& g,
+                       const T& v,
+                       std::unordered_map<T, bool>& visited)
+    {
+      if (!visited[v])
+      {
+        visited[v] = true;
+        if (g.count(v))
+        {
+          const auto& edges = g.at(v);
+          for (const auto& edge : edges)
+            return is_dag_helper(g, edge.vertex, visited);
+        }
+      }
+      else
+      {
+        return false;
+      }
+
+      return true;
+    }
+  }
+
+  template<typename T>
+  bool is_dag(const graph<T>& g)
+  {
+    std::unordered_map<T, bool> visited;
+    for (const auto& item : g)
+    {
+      if (visited[item.first])
+        return false;
+      else
+        return is_dag_helper(g, item.first, visited);
+    }
+
+    return true;
+  }
+
+  namespace
+  {
+    template<typename T>
+    void topological_sort_helper(const graph<T>& g,
+                                 const T& v,
+                                 std::unordered_map<T, bool>& visited,
+                                 std::stack<T>& s)
+    {
+      visited[v] = true;
+      if (g.count(v))
+      {
+        const auto& edges = g.at(v);
+        for (const auto& edge : edges)
+        {
+          if (!visited[edge.vertex])
+            topological_sort_helper(g, edge.vertex, visited, s);
+        }
+      }
+
+      s.push(v);
+    }
+  }
+
+  template<typename T>
+  std::vector<T> topological_sort(const graph<T>& g)
+  {
+    if (!is_dag(g))
+    {
+      std::cout << "Cannot perform topological sort on a directed graph with cycle!\n";
+      exit(1);
+    }
+
+    std::stack<T> s;
+    std::unordered_map<T, bool> visited;
+    for (const auto& item : g)
+    {
+      if (!visited[item.first])
+      {
+        topological_sort_helper(g, item.first, visited, s);
+      }
+    }
+
+    std::vector<T> result;
+    while (!s.empty())
+    {
+      result.push_back(s.top());
+      s.pop();
+    }
+
+    return result;
   }
 }

@@ -45,6 +45,7 @@ namespace cheetah
       sort(v, mid, hi, aux);
       merge(v, lo, mid, hi, aux);
     }
+
     template<typename T, typename Comp>
     void merge(std::vector<T>& v,
                std::size_t lo,
