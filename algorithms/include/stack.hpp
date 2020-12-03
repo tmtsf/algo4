@@ -5,12 +5,12 @@
 namespace cheetah
 {
   template<typename T>
-  struct bag : public impl::container<T>
+  struct stack : public impl::container<T>
   {
     using node_ptr_t = typename impl::container<T>::node_ptr_t;
     using iterator = typename impl::container<T>::iterator;
 
-    bag() : first(nullptr), N(0)
+    stack() : first(nullptr), N(0)
     { }
     void push(const T& elem)
     {
@@ -18,9 +18,22 @@ namespace cheetah
       first = temp;
       ++N;
     }
+    T& top(void)
+    {
+      return first->item;
+    }
+    const T& top(void) const
+    {
+      return first->item;
+    }
     bool empty(void)
     {
       return N == 0;
+    }
+    void pop(void)
+    {
+      first = first->next;
+      --N;
     }
     int size(void)
     {
