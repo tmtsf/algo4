@@ -69,4 +69,16 @@ int main()
   for (const auto& course : result)
     std::cout << course << "\n";
   std::cout << "**********************************************\n\n";
+
+  cheetah::graph<std::string> g4 = cheetah::make_directed_graph<std::string>(TINY_DG);
+
+  std::cout << "**********************************************\n";
+  std::vector<std::vector<std::string>> results = cheetah::digraph_strong_components(g4);
+  for (const auto& result : results)
+  {
+    for (const auto& vertex : result)
+      std::cout << vertex << "  ";
+    std::cout << "\n";
+  }
+  std::cout << "**********************************************\n\n";
 }

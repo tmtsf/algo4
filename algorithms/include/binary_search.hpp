@@ -4,81 +4,78 @@
 
 namespace cheetah
 {
-  namespace
+  template<typename T>
+  std::size_t lower_bound(const std::vector<T>& v,
+                          const T& target,
+                          std::size_t lo,
+                          std::size_t hi)
   {
-    template<typename T>
-    std::size_t lower_bound(const std::vector<T>& v,
-                            const T& target,
-                            std::size_t lo,
-                            std::size_t hi)
+    while (lo < hi)
     {
-      while (lo < hi)
-      {
-        std::size_t mid = lo + (hi - lo) / 2;
-        if (v[mid] < target)
-          lo = mid + 1;
-        else
-          hi = mid;
-      }
-
-      return lo;
+      std::size_t mid = lo + (hi - lo) / 2;
+      if (v[mid] < target)
+        lo = mid + 1;
+      else
+        hi = mid;
     }
 
-    template<typename T, typename Comp>
-    std::size_t lower_bound(const std::vector<T>& v,
-                            const T& target,
-                            const Comp& comp,
-                            std::size_t lo,
-                            std::size_t hi)
-    {
-      while (lo < hi)
-      {
-        std::size_t mid = lo + (hi - lo) / 2;
-        if (comp(v[mid], target))
-          lo = mid + 1;
-        else
-          hi = mid;
-      }
+    return lo;
+  }
 
-      return lo;
+  template<typename T, typename Comp>
+  std::size_t lower_bound(const std::vector<T>& v,
+                          const T& target,
+                          std::size_t lo,
+                          std::size_t hi,
+                          const Comp& comp)
+  {
+    while (lo < hi)
+    {
+      std::size_t mid = lo + (hi - lo) / 2;
+      if (comp(v[mid], target))
+        lo = mid + 1;
+      else
+        hi = mid;
     }
 
-    template<typename T>
-    std::size_t upper_bound(const std::vector<T>& v,
-                            const T& target,
-                            std::size_t lo,
-                            std::size_t hi)
-    {
-      while (lo < hi)
-      {
-        std::size_t mid = lo + (hi - lo) / 2;
-        if (v[mid] <= target)
-          lo = mid + 1;
-        else
-          hi = mid;
-      }
+    return lo;
+  }
 
-      return lo;
+  template<typename T>
+  std::size_t upper_bound(const std::vector<T>& v,
+                          const T& target,
+                          std::size_t lo,
+                          std::size_t hi)
+  {
+    while (lo < hi)
+    {
+      std::size_t mid = lo + (hi - lo) / 2;
+      if (v[mid] <= target)
+        lo = mid + 1;
+      else
+        hi = mid;
     }
 
-    template<typename T, typename Comp>
-    std::size_t upper_bound(const std::vector<T>& v,
-                            const T& target,
-                            const Comp& comp,
-                            std::size_t lo,
-                            std::size_t hi)
-    {
-      while (lo < hi)
-      {
-        std::size_t mid = lo + (hi - lo) / 2;
-        if (!comp(target, v[mid]))
-          lo = mid + 1;
-        else
-          hi = mid;
-      }
+    return lo;
+  }
 
-      return lo;
+  template<typename T, typename Comp>
+  std::size_t upper_bound(const std::vector<T>& v,
+                          const T& target,
+                          std::size_t lo,
+                          std::size_t hi,
+                          const Comp& comp)
+  {
+    while (lo < hi)
+    {
+      std::size_t mid = lo + (hi - lo) / 2;
+      if (!comp(target, v[mid]))
+        lo = mid + 1;
+      else
+        hi = mid;
     }
+
+    return lo;
   }
 
   template<typename T>
@@ -93,7 +90,7 @@ namespace cheetah
                           const T& target,
                           const Comp& comp)
   {
-    return lower_bound(v, target, comp, 0, v.size());
+    return lower_bound(v, target, 0, v.size(), comp);
   }
 
   template<typename T>
@@ -108,7 +105,7 @@ namespace cheetah
                           const T& target,
                           const Comp& comp)
   {
-    return upper_bound(v, target, comp, 0, v.size());
+    return upper_bound(v, target, 0, v.size(), comp);
   }
 
   template<typename T>

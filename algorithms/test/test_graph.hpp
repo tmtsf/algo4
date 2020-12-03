@@ -317,10 +317,10 @@ namespace cheetah
   namespace
   {
     template<typename T>
-    void topological_sort_helper(const graph<T>& g,
-                                 const T& v,
-                                 std::unordered_map<T, bool>& visited,
-                                 std::stack<T>& s)
+    void reverse_post_order_helper(const graph<T>& g,
+                                   const T& v,
+                                   std::unordered_map<T, bool>& visited,
+                                   std::stack<T>& s)
     {
       visited[v] = true;
       if (g.count(v))
@@ -329,11 +329,25 @@ namespace cheetah
         for (const auto& edge : edges)
         {
           if (!visited[edge.vertex])
-            topological_sort_helper(g, edge.vertex, visited, s);
+            reverse_post_order_helper(g, edge.vertex, visited, s);
         }
       }
 
       s.push(v);
+    }
+
+    template<typename T>
+    void reverse_post_order(const graph<T>& g,
+                            std::stack<T>& s)
+    {
+      std::unordered_map<T, bool> visited;
+      for (const auto& item : g)
+      {
+        if (!visited[item.first])
+        {
+          reverse_post_order_helper(g, item.first, visited, s);
+        }
+      }
     }
   }
 
@@ -347,14 +361,7 @@ namespace cheetah
     }
 
     std::stack<T> s;
-    std::unordered_map<T, bool> visited;
-    for (const auto& item : g)
-    {
-      if (!visited[item.first])
-      {
-        topological_sort_helper(g, item.first, visited, s);
-      }
-    }
+    reverse_post_order(g, s);
 
     std::vector<T> result;
     while (!s.empty())
@@ -364,5 +371,71 @@ namespace cheetah
     }
 
     return result;
+  }
+
+  namespace
+  {
+    template<typename T>
+    graph<T> reverse(const graph<T>& g)
+    {
+      graph<T> rev;
+      for (const auto& item : g)
+      {
+        for (const auto& edge : item.second)
+          rev[edge.vertex].push_back(item.first);
+      }
+
+      return rev;
+    }
+
+    template<typename T>
+    void digraph_strong_components_helper(const graph<T>& g,
+                                          const T& t,
+                                          std::unordered_map<T, bool>& visited,
+                                          std::unordered_map<T, int>& components,
+                                          int count)
+    {
+      visited[t] = true;
+      components[t] = count;
+      if (g.count(t))
+      {
+        const auto& edges = g.at(t);
+        for (const auto& edge : edges)
+        {
+          if (!visited[edge.vertex])
+            digraph_strong_components_helper(g, edge.vertex, visited, components, count);
+        }
+      }
+    }
+  }
+
+  template<typename T>
+  std::vector<std::vector<T>> digraph_strong_components(const graph<T>& g)
+  {
+    graph<T> rev = reverse(g);
+    std::stack<T> s;
+    reverse_post_order(rev, s);
+
+    std::unordered_map<T, bool> visited;
+    std::unordered_map<T, int> components;
+    int count = 0;
+    while (!s.empty())
+    {
+      const T& t = s.top();
+      s.pop();
+      if (!visited[t])
+      {
+        digraph_strong_components_helper(g, t, visited, components, count);
+        ++count;
+      }
+    }
+
+    std::vector<std::vector<T>> results(count, std::vector<T>());
+    for (const auto& item : components)
+    {
+      results[item.second].push_back(item.first);
+    }
+
+    return results;
   }
 }
