@@ -5,6 +5,7 @@
 #include <string>
 #include <fstream>
 #include <sstream>
+#include "bag.hpp"
 
 namespace cheetah
 {
@@ -34,7 +35,7 @@ namespace cheetah
   };
 
   template<typename T>
-  using graph = std::unordered_map<T, std::vector<Edge<T>>>;
+  using graph = std::unordered_map<T, cheetah::bag<Edge<T>>>;
 
   namespace
   {
@@ -107,8 +108,8 @@ namespace cheetah
 
       for (std::size_t i=1; i<vertices.size(); ++i)
       {
-        graph[vertices.front()].emplace_back(vertices[i]);
-        graph[vertices[i]].emplace_back(vertices.front());
+        graph[vertices.front()].push(vertices[i]);
+        graph[vertices[i]].push(vertices.front());
       }
     }
 
@@ -148,7 +149,7 @@ namespace cheetah
 
       for (std::size_t i=1; i<vertices.size(); ++i)
       {
-        graph[vertices.front()].emplace_back(vertices[i]);
+        graph[vertices.front()].push(vertices[i]);
       }
     }
 

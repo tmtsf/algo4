@@ -5,17 +5,14 @@
 namespace cheetah
 {
   template<typename T>
-  struct queue : public impl::container<T>
+  struct queue
   {
-    using node_ptr_t = typename impl::container<T>::node_ptr_t;
-    using iterator = typename impl::container<T>::iterator;
-
     queue() : first(nullptr), last(nullptr), N(0)
     { }
     void push(const T& elem)
     {
-      node_ptr_t temp = last;
-      last = this->make_node(elem, nullptr);
+      node_ptr_t<T> temp = last;
+      last = std::make_shared<node<T>>(elem, nullptr);
       if (empty())
         first = last;
       else
@@ -46,13 +43,25 @@ namespace cheetah
     {
       return N;
     }
-    virtual iterator begin(void)
+    virtual iterator<T> begin(void)
     {
-      return iterator(first);
+      return iterator<T>(first);
+    }
+    virtual const iterator<T> begin(void) const
+    {
+      return iterator<T>(first);
+    }
+    iterator<T> end(void)
+    {
+      return iterator<T>{};
+    }
+    const iterator<T> end(void) const
+    {
+      return iterator<T>{};
     }
   private:
-    node_ptr_t first;
-    node_ptr_t last;
+    node_ptr_t<T> first;
+    node_ptr_t<T> last;
     int N;
   };
 }

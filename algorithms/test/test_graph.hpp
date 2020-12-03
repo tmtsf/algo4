@@ -382,7 +382,7 @@ namespace cheetah
       for (const auto& item : g)
       {
         for (const auto& edge : item.second)
-          rev[edge.vertex].push_back(item.first);
+          rev[edge.vertex].push(item.first);
       }
 
       return rev;

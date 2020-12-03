@@ -5,16 +5,13 @@
 namespace cheetah
 {
   template<typename T>
-  struct stack : public impl::container<T>
+  struct stack
   {
-    using node_ptr_t = typename impl::container<T>::node_ptr_t;
-    using iterator = typename impl::container<T>::iterator;
-
     stack() : first(nullptr), N(0)
     { }
     void push(const T& elem)
     {
-      node_ptr_t temp = this->make_node(elem, first);
+      node_ptr_t<T> temp = std::make_shared<node<T>>(elem, first);
       first = temp;
       ++N;
     }
@@ -39,12 +36,24 @@ namespace cheetah
     {
       return N;
     }
-    virtual iterator begin(void)
+    virtual iterator<T> begin(void)
     {
-      return iterator(first);
+      return iterator<T>(first);
+    }
+    virtual const iterator<T> begin(void) const
+    {
+      return iterator<T>(first);
+    }
+    iterator<T> end(void)
+    {
+      return iterator<T>{};
+    }
+    const iterator<T> end(void) const
+    {
+      return iterator<T>{};
     }
   private:
-    node_ptr_t first;
+    node_ptr_t<T> first;
     int N;
   };
 }
