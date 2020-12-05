@@ -1,441 +1,119 @@
 #include <iostream>
-#include <stack>
-#include <queue>
 #include <unordered_set>
 
 #include "graph.hpp"
+#include "graph_traversal.hpp"
+#include "directed_graph.hpp"
+#include "undirected_graph.hpp"
+#include "connected_components.hpp"
+#include "graph_path.hpp"
+#include "topological_sort.hpp"
 
 namespace cheetah
 {
-  void test_make_graph(const char* filename)
+  void test_make_graph(const char* filename,
+                       const std::string& separator = " ")
   {
-    graph<int> g1 = cheetah::make_undirected_graph<int>(filename);
-    graph<int> g2 = cheetah::make_directed_graph<int>(filename);
+    std::cout << "**********************************************\n";
+    graph_ptr_t g1 = cheetah::make_undirected_graph(filename, separator);
+
+    const auto& adj_list1 = g1->adjacency_list();
+    const auto& symbols1 = g1->symbol_table();
+    for (std::size_t i=0; i<adj_list1.size(); ++i)
+    {
+      std::cout << symbols1[i] << ": ";
+      for (const auto& vertex : adj_list1[i])
+        std::cout << "[" << symbols1[vertex] << "] -> ";
+
+      std::cout << "[]\n";
+    }
+    std::cout << "**********************************************\n\n";
+
+    std::cout << "**********************************************\n";
+    graph_ptr_t g2 = cheetah::make_directed_graph(filename, separator);
+
+    const auto& adj_list2 = g2->adjacency_list();
+    const auto& symbols2 = g2->symbol_table();
+    for (std::size_t i=0; i<adj_list2.size(); ++i)
+    {
+      std::cout << symbols2[i] << ": ";
+      for (const auto& vertex : adj_list2[i])
+        std::cout << "[" << symbols2[vertex] << "] -> ";
+
+      std::cout << "[]\n";
+    }
+    std::cout << "**********************************************\n\n";
   }
 
-  namespace
+  void test_graph_dfs(const char* filename,
+                      const std::string& separator = " ")
   {
-    template<typename T>
-    std::unordered_set<T> vertices(const graph<T>& g)
-    {
-      std::unordered_set<T> s;
-      for (const auto& item : g)
-      {
-        s.insert(item.first);
-        for (const auto& edge : item.second)
-        {
-          s.insert(edge.vertex);
-        }
-      }
-
-      return s;
-    }
-
-    template<typename T>
-    void graph_dfs_helper(const graph<T>& g,
-                          const T& start,
-                          std::unordered_map<T, bool>& visited,
-                          const std::string& spaces)
-    {
-      std::cout << spaces << start << "\n";
-      visited[start] = true;
-      auto edges = g.at(start);
-      for (const auto& edge : edges)
-      {
-        if (!visited[edge.vertex])
-        {
-          graph_dfs_helper(g, edge.vertex, visited, spaces + "  ");
-        }
-      }
-    }
+    std::cout << "**********************************************\n";
+    graph_ptr_t g1 = cheetah::make_undirected_graph(filename, separator);
+    cheetah::dfs(g1);
+    std::cout << "**********************************************\n\n";
   }
 
-  template<typename T>
-  void test_graph_dfs(const graph<T>& g)
+  void test_graph_bfs(const char* filename,
+                      const std::string& separator = " ")
   {
-    std::unordered_map<T, bool> visited;
-    std::string spaces;
-    for (const auto& item : g)
-    {
-      if (!visited[item.first])
-        graph_dfs_helper(g, item.first, visited, spaces);
-    }
+    std::cout << "**********************************************\n";
+    graph_ptr_t g1 = cheetah::make_undirected_graph(filename, separator);
+    cheetah::bfs(g1);
+    std::cout << "**********************************************\n\n";
   }
 
-  template<typename T>
-  void test_graph_bfs(const graph<T>& g)
+  void test_undirected_graph_connected_components(const char* filename,
+                                                  const std::string& separator = " ")
   {
-    std::unordered_map<T, bool> visited;
-    std::queue<T> q;
-    for (const auto& item : g)
-    {
-      if (!visited[item.first])
-      {
-        q.push(item.first);
-        while (!q.empty())
-        {
-          std::size_t sz = q.size();
-          for (std::size_t i=0; i<sz; ++i)
-          {
-            T top = q.front();
-            q.pop();
-            visited[top] = true;
-            std::cout << top << "\t";
-
-            auto edges = g.at(top);
-            for (const auto& pair : edges)
-            {
-              if (!visited[pair.first])
-              {
-                visited[pair.first] = true;
-                q.push(pair.first);
-              }
-            }
-          }
-
-          std::cout << "\n";
-        }
-      }
-    }
+    std::cout << "**********************************************\n";
+    graph_ptr_t g1 = cheetah::make_undirected_graph(filename, separator);
+    cheetah::undirected_graph_connected_components(g1);
+    std::cout << "**********************************************\n\n";
   }
 
-  namespace
+  void test_graph_dfs_path(const char* filename,
+                           const std::string& separator = " ")
   {
-    template<typename T>
-    void connected_component_helper(const graph<T>& g,
-                                    const T& v,
-                                    std::unordered_map<int, bool>& visited,
-                                    std::unordered_map<T, int>& m,
-                                    int count)
-    {
-      visited[v] = true;
-      m[v] = count;
-      const auto& edges = g.at(v);
-      for (const auto& edge : edges)
-      {
-        if (!visited[edge.vertex])
-          connected_component_helper(g, edge.vertex, visited, m, count);
-      }
-    }
+    std::cout << "**********************************************\n";
+    graph_ptr_t g1 = cheetah::make_undirected_graph(filename, separator);
+    cheetah::graph_dfs_path(g1, std::string("0"));
+    std::cout << "**********************************************\n\n";
   }
 
-  template<typename T>
-  void test_graph_connected_components(const graph<T>& g)
+  void test_graph_bfs_path(const char* filename,
+                           const std::string& separator = " ")
   {
-    std::unordered_map<T, bool> visited;
-    std::unordered_map<T, int> m;
-    int count = 0;
-    for (const auto& item : g)
-    {
-      if (!visited[item.first])
-      {
-        ++count;
-        connected_component_helper(g, item.first, visited, m, count);
-      }
-    }
+    std::cout << "**********************************************\n";
+    graph_ptr_t g1 = cheetah::make_undirected_graph(filename, separator);
+    cheetah::graph_bfs_path(g1, std::string("0"));
+    std::cout << "**********************************************\n\n";
+  }
 
-    std::cout << "There are " << count << " connected components in this graph.\n";
-    std::vector<std::vector<T>> components(count, std::vector<T>());
-    for (const auto& item : m)
-    {
-      components[item.second-1].push_back(item.first);
-    }
+  void test_topologial_sort(const char* filename,
+                            const std::string& separator = " ")
+  {
+    std::cout << "**********************************************\n";
+    graph_ptr_t g = cheetah::make_directed_graph(filename, separator);
+    std::vector<std::string> result = cheetah::topological_sort(g);
+    for (const auto& item : result)
+      std::cout << item << "\n";
+    std::cout << "**********************************************\n\n";
+  }
 
-    for (int i=0; i<count; ++i)
+  void test_strong_components(const char* filename,
+                              const std::string& separator = " ")
+  {
+    std::cout << "**********************************************\n";
+    graph_ptr_t g = cheetah::make_directed_graph(filename, separator);
+    std::vector<std::vector<std::string>> result = cheetah::digraph_strong_components(g);
+    for (std::size_t i=0; i<result.size(); ++i)
     {
       std::cout << i << ": ";
-      for (const auto& e : components[i])
-        std::cout << e << "  ";
-
+      for (const auto& vertex : result[i])
+        std::cout << vertex << " ";
       std::cout << "\n";
     }
-  }
-
-  namespace
-  {
-    template<typename T>
-    void graph_dfs_path_helper(const graph<T>& g,
-                               const T& source,
-                               std::unordered_map<T, bool>& visited,
-                               std::unordered_map<T, T>& path)
-    {
-      visited[source] = true;
-
-      if (g.count(source))
-      {
-        for (const auto& edge : g.at(source))
-        {
-          if (!visited[edge.vertex])
-          {
-            visited[edge.vertex] = true;
-            path[edge.vertex] = source;
-            graph_dfs_path_helper(g, edge.vertex, visited, path);
-          }
-        }
-      }
-    }
-  }
-
-  template<typename T>
-  void test_graph_dfs_path(const graph<T>& g,
-                           const T& source)
-  {
-    std::unordered_map<T, bool> visited;
-    std::unordered_map<T, T> path;
-    graph_dfs_path_helper(g, source, visited, path);
-    std::unordered_set<T> s = vertices(g);
-
-    for (const auto& item : s)
-    {
-      if (!visited[item])
-        std::cout << item << ": Not accessible from " << source << "!\n";
-      else if (source == item)
-        std::cout << item << ": Start of the path!\n";
-      else
-      {
-        T temp = item;
-        std::stack<T> s;
-        while (temp != source)
-        {
-          s.push(temp);
-          temp = path[temp];
-        }
-
-        std::cout << item << ": " << source;
-        while (!s.empty())
-        {
-          temp = s.top();
-          s.pop();
-          std::cout << "->" << temp;
-        }
-
-        std::cout << "\n";
-      }
-    }
-  }
-
-  template<typename T>
-  void test_graph_bfs_path(const graph<T>& g,
-                           const T& source)
-  {
-    std::unordered_map<T, bool> visited;
-    std::unordered_map<T, T> path;
-
-    std::queue<T> q;
-    q.push(source);
-    while (!q.empty())
-    {
-      T temp = q.front();
-      visited[temp] = true;
-      q.pop();
-
-      if (g.count(temp))
-      {
-        for (const auto& edge : g.at(temp))
-        {
-          if (!visited[edge.vertex])
-          {
-            visited[edge.vertex] = true;
-            q.push(edge.vertex);
-            path[edge.vertex] = temp;
-          }
-        }
-      }
-    }
-
-    std::unordered_set<T> s = vertices(g);
-    for (const auto& item : s)
-    {
-      if (!visited[item])
-        std::cout << item << ": Not accessible from " << source << "!\n";
-      else if (source == item)
-        std::cout << item << ": Start of the path!\n";
-      else
-      {
-        T temp = item;
-        std::stack<T> s;
-        while (temp != source)
-        {
-          s.push(temp);
-          temp = path[temp];
-        }
-
-        std::cout << item << ": " << source;
-        while (!s.empty())
-        {
-          temp = s.top();
-          s.pop();
-          std::cout << "->" << temp;
-        }
-
-        std::cout << "\n";
-      }
-    }
-  }
-
-  namespace
-  {
-    template<typename T>
-    bool is_dag_helper(const graph<T>& g,
-                       const T& v,
-                       std::unordered_map<T, bool>& visited)
-    {
-      if (!visited[v])
-      {
-        visited[v] = true;
-        if (g.count(v))
-        {
-          const auto& edges = g.at(v);
-          for (const auto& edge : edges)
-            return is_dag_helper(g, edge.vertex, visited);
-        }
-      }
-      else
-      {
-        return false;
-      }
-
-      return true;
-    }
-  }
-
-  template<typename T>
-  bool is_dag(const graph<T>& g)
-  {
-    std::unordered_map<T, bool> visited;
-    for (const auto& item : g)
-    {
-      if (visited[item.first])
-        return false;
-      else
-        return is_dag_helper(g, item.first, visited);
-    }
-
-    return true;
-  }
-
-  namespace
-  {
-    template<typename T>
-    void reverse_post_order_helper(const graph<T>& g,
-                                   const T& v,
-                                   std::unordered_map<T, bool>& visited,
-                                   std::stack<T>& s)
-    {
-      visited[v] = true;
-      if (g.count(v))
-      {
-        const auto& edges = g.at(v);
-        for (const auto& edge : edges)
-        {
-          if (!visited[edge.vertex])
-            reverse_post_order_helper(g, edge.vertex, visited, s);
-        }
-      }
-
-      s.push(v);
-    }
-
-    template<typename T>
-    void reverse_post_order(const graph<T>& g,
-                            std::stack<T>& s)
-    {
-      std::unordered_map<T, bool> visited;
-      for (const auto& item : g)
-      {
-        if (!visited[item.first])
-        {
-          reverse_post_order_helper(g, item.first, visited, s);
-        }
-      }
-    }
-  }
-
-  template<typename T>
-  std::vector<T> topological_sort(const graph<T>& g)
-  {
-    if (!is_dag(g))
-    {
-      std::cout << "Cannot perform topological sort on a directed graph with cycle!\n";
-      exit(1);
-    }
-
-    std::stack<T> s;
-    reverse_post_order(g, s);
-
-    std::vector<T> result;
-    while (!s.empty())
-    {
-      result.push_back(s.top());
-      s.pop();
-    }
-
-    return result;
-  }
-
-  namespace
-  {
-    template<typename T>
-    graph<T> reverse(const graph<T>& g)
-    {
-      graph<T> rev;
-      for (const auto& item : g)
-      {
-        for (const auto& edge : item.second)
-          rev[edge.vertex].push(item.first);
-      }
-
-      return rev;
-    }
-
-    template<typename T>
-    void digraph_strong_components_helper(const graph<T>& g,
-                                          const T& t,
-                                          std::unordered_map<T, bool>& visited,
-                                          std::unordered_map<T, int>& components,
-                                          int count)
-    {
-      visited[t] = true;
-      components[t] = count;
-      if (g.count(t))
-      {
-        const auto& edges = g.at(t);
-        for (const auto& edge : edges)
-        {
-          if (!visited[edge.vertex])
-            digraph_strong_components_helper(g, edge.vertex, visited, components, count);
-        }
-      }
-    }
-  }
-
-  template<typename T>
-  std::vector<std::vector<T>> digraph_strong_components(const graph<T>& g)
-  {
-    graph<T> rev = reverse(g);
-    std::stack<T> s;
-    reverse_post_order(rev, s);
-
-    std::unordered_map<T, bool> visited;
-    std::unordered_map<T, int> components;
-    int count = 0;
-    while (!s.empty())
-    {
-      const T& t = s.top();
-      s.pop();
-      if (!visited[t])
-      {
-        digraph_strong_components_helper(g, t, visited, components, count);
-        ++count;
-      }
-    }
-
-    std::vector<std::vector<T>> results(count, std::vector<T>());
-    for (const auto& item : components)
-    {
-      results[item.second].push_back(item.first);
-    }
-
-    return results;
+    std::cout << "**********************************************\n\n";
   }
 }

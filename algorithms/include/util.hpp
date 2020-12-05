@@ -2,8 +2,10 @@
 
 #include <fstream>
 #include <sstream>
+#include <iostream>
 #include <string>
 #include <vector>
+#include <unordered_map>
 
 namespace cheetah
 {
@@ -30,24 +32,57 @@ namespace cheetah
     return tokens;
   }
 
-  template<typename T>
-  std::vector<T> parse(const std::vector<std::string>& tokens)
+  // template<typename T>
+  // std::vector<T> parse(const std::vector<std::string>& tokens)
+  // {
+  //   std::vector<T> results;
+  //   for (const auto& token : tokens)
+  //   {
+  //     std::istringstream iss(token);
+  //     T result;
+  //     iss >> result;
+  //     results.push_back(result);
+  //   }
+
+  //   return results;
+  // }
+
+  // template<>
+  // std::vector<std::string> parse(const std::vector<std::string>& tokens)
+  // {
+  //   return tokens;
+  // }
+
+  void parse(const char* filename,
+             const std::string& delim,
+             std::vector<std::pair<int, int>>& edges,
+             std::unordered_map<std::string, int>& lookup,
+             std::vector<std::string>& symbols)
   {
-    std::vector<T> results;
-    for (const auto& token : tokens)
+    std::ifstream in(filename);
+    if (!in.is_open())
     {
-      std::istringstream iss(token);
-      T result;
-      iss >> result;
-      results.push_back(result);
+      std::cout << "File failed to open.\n";
+      exit(1);
     }
 
-    return results;
-  }
 
-  template<>
-  std::vector<std::string> parse(const std::vector<std::string>& tokens)
-  {
-    return tokens;
+    std::string line;
+    while (std::getline(in, line))
+    {
+      std::vector<std::string> vertices = split(line, delim);
+      for (const std::string& vertex : vertices)
+      {
+        if (!lookup.count(vertex))
+          lookup[vertex] = lookup.size();
+      }
+
+      for (std::size_t i=1; i<vertices.size(); ++i)
+        edges.emplace_back(lookup[vertices.front()], lookup[vertices[i]]);
+    }
+
+    symbols.resize(lookup.size());
+    for (const auto& item : lookup)
+      symbols[item.second] = item.first;
   }
 }
