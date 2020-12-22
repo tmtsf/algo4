@@ -3,21 +3,25 @@
 
 namespace dp
 {
-  int cutting_rod(const std::vector<int>& prices,
-                  int n)
+  void cutting_rod(const std::vector<int>& prices,
+                   std::vector<int>& totals,
+                   std::vector<int>& locations)
   {
-    std::vector<int> dp(prices.size(), 0);
+    int n = prices.size();
+
+    totals.resize(n+1, 0);
+    locations.resize(n+1, 0);
     for (int i=1; i<=n; ++i)
     {
-      int ans = INT_MIN;
+      totals[i] = INT_MIN;
       for (int j=1; j<=i; ++j)
       {
-        ans = std::max(ans, prices[j] + dp[i-j]);
+        if (totals[i] < prices[j-1] + totals[i-j])
+        {
+          totals[i] = prices[j-1] + totals[i-j];
+          locations[i] = j;
+        }
       }
-
-      dp[i] = ans;
     }
-
-    return dp[n];
   }
 }
