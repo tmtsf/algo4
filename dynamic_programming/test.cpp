@@ -2,6 +2,7 @@
 #include "cutting_rod.hpp"
 #include "matrix_multiplication.hpp"
 #include "longest_common_subsequence.hpp"
+#include "longest_palindromic_subsequence.hpp"
 
 int main(void)
 {
@@ -61,6 +62,30 @@ int main(void)
     std::cout << "The longest common subsequence is ";
     dp::print_longest_common_subsequence(locations, s1, m, n);
     std::cout << ", whose size is " << dp[m][n] << ".\n";
+
+    std::cout << "***********************************************\n\n";
+  }
+
+  {
+    std::cout << "***********************************************\n";
+
+    std::cout << "Testing longest palindromic subsequence problem:\n";
+    std::string s = "geeksforgeeks";
+    std::vector<std::vector<int>> dp;
+    std::vector<std::vector<int>> locations;
+    dp::longest_palindromic_subsequence(s, dp, locations);
+
+    int n = s.size();
+    // for (int i=0; i<=n; ++i)
+    // {
+    //   for (int j=0; j<=n; ++j)
+    //     std::cout << dp[i][j] << "\t";
+    //   std::cout << "\n";
+    // }
+
+    std::cout << "The longest palindromic subsequence is ";
+    dp::print_longest_palindromic_subsequence(locations, s, 1, n);
+    std::cout << ", whose size is " << dp[1][n] << ".\n";
 
     std::cout << "***********************************************\n\n";
   }
