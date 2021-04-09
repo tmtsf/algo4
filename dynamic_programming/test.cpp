@@ -70,7 +70,7 @@ int main(void)
     std::cout << "***********************************************\n";
 
     std::cout << "Testing longest palindromic subsequence problem:\n";
-    std::string s = "geeksforgeeks";
+    std::string s = "aacabdkacaa";
     std::vector<std::vector<int>> dp;
     std::vector<std::vector<int>> locations;
     dp::longest_palindromic_subsequence(s, dp, locations);
